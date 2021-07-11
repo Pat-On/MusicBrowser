@@ -7,7 +7,7 @@ except ImportError:  # Python2
 
 conn = sqlite3.connect('music.sqlite')
 
-mainWindow = tkinter.TK()
+mainWindow = tkinter.Tk()
 mainWindow.title('Music DB Browser')
 mainWindow.geometry('1024x728')
 
@@ -47,3 +47,9 @@ songLV.set(("Choose an album",))  # coma because again it is tuple
 songList = tkinter.Listbox(mainWindow, listvariable=songLV)
 songList.grid(row=1, column=2, sticky='nsew', padx=(30, 0))
 songList.config(border=2, relief='sunken')
+
+# MAIN LOOP
+
+mainWindow.mainloop()
+print("closing db connection")
+conn.close()
