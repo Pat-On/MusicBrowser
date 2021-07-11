@@ -32,3 +32,59 @@ def tuple_builder(*args):
 
 
 print(tuple_builder(1, 2, 3, 4, 5))
+
+################# *KWARGS #################################
+
+print("Hello World")
+
+
+#  * unpacking tuple
+#  ** unpacking dictionaries
+
+# so we are passing by using **kwargs from the parameter to the our print()
+#  and base on it we are unpacking the key-value pair and we can pass as many parameter as we want
+# nice
+# def print_backwards(*args,  **kwargs):
+#     for word in args[::-1]:
+#         print(word[::-1], end=" ", **kwargs)
+
+#          first solution to define end=" "
+# def print_backwards(*args, end=" ", **kwargs):
+#     for word in args[::-1]:
+#         print(word[::-1], end=" ", **kwargs)
+
+# second solution is to remove "end" from the **kwargs
+# def print_backwards(*args, **kwargs):
+#     print(kwargs)
+#     kwargs.pop('end', None)
+#     for word in args[::-1]:
+#         print(word[::-1], end=" ", **kwargs)
+
+
+def print_backwards(*args, **kwargs):
+    end_character = kwargs.pop('end', "\n")
+    sep_character = kwargs.pop('sep', " ")
+    for word in args[:0:-1]:
+        print(word[::-1], end=sep_character, **kwargs)
+    print(args[0][::-1], end=end_character, **kwargs)  # and print the first word separately
+    # print(end=end_character)
+
+
+def backwards_print(*args, **kwargs):
+    sep_character = kwargs.pop('sep', ' ')
+    print(sep_character.join(word[::-1] for word in args[::-1]), **kwargs)  # list comprehension
+
+
+with open("backwards.txt", 'w') as backwards:
+    print(print_backwards("hello", "planet", "earth"))
+
+# You can not specify two times the same argument <- two ways to fix it
+with open("backwards.txt", 'w') as backwards:
+    print(print_backwards("hello", "planet", "earth", file=backwards, end="\n"))
+    print("Another String")
+
+print("*" * 40)
+print("hello", "planet", "earth", end="", sep="\n**\n")
+
+print_backwards("hello", "planet", "earth", end="\n", sep="\n**\n")
+print("=" * 40)
