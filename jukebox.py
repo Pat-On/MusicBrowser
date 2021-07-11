@@ -32,13 +32,24 @@ artistList = tkinter.Listbox(mainWindow)
 artistList.grid(row=1, column=0, sticky='nsew', rowspan=2, padx=(30, 0))
 artistList.config(border=2, relief='sunken')
 
+# we are telling it to use yview opposite is xview
+artistScroll = tkinter.Scrollbar(mainWindow, orient=tkinter.VERTICAL, command=artistList.yview)
+artistScroll.grid(row=1, column=0, sticky='nse', rowspan=2)
+artistList['yscrollcommand'] = artistScroll.set  # it will notify list box that to set method if anything
+# is going to happen what should change the scroll like arrows  -> way of implement it in any widget what support it!
+
 # ALBUM LISTBOX
 
 albumLV = tkinter.Variable(mainWindow)
+# tkinter variable in python are tracked so if anything is going to change the python is going to be notify
 albumLV.set(("Choose an artist",))  # tuple
-albumList = tkinter.Listbox(mainWindow, listvariable=albumLV)
+albumList = tkinter.Listbox(mainWindow, listvariable=albumLV)  # is variable is going to change it is going to be notify
 albumList.grid(row=1, column=1, sticky='nsew', padx=(30, 0))
 albumList.config(border=2, relief='sunken')
+
+albumScroll = tkinter.Scrollbar(mainWindow, orient=tkinter.VERTICAL, command=albumList.yview)
+albumScroll.grid(row=1, column=1, sticky='nse', rowspan=2)
+albumList['yscrollcommand'] = albumScroll.set
 
 # SONGS LISTBOX
 
@@ -49,7 +60,9 @@ songList.grid(row=1, column=2, sticky='nsew', padx=(30, 0))
 songList.config(border=2, relief='sunken')
 
 # MAIN LOOP
-
+testList = range(0, 100)
+albumLV.set(tuple(testList))
+# albumLV.set((1, 2, 3, 4, 5)) # You have to use set You can not assign them straight forward
 mainWindow.mainloop()
 print("closing db connection")
 conn.close()
