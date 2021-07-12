@@ -44,28 +44,47 @@ class DataListBox(Scrollbox):
     def clear(self):
         self.delete(0, tkinter.END)
 
-    def requery(self):
-        print(self.sql_select + self.sql_sort)  # TODO del
-        self.cursor.execute(self.sql_select + self.sql_sort)
+    def requery(self, link_value=None):
+        if link_value:
+            # populating by specific id
+            sql = self.sql_select + " WHERE " + "artist" + "=?" + self.sql_sort
+            print(sql)  # TODO: delete this line
+            self.cursor.execute(sql, (link_value,))
+        else:
+            print(self.sql_select + self.sql_sort)  # TODO del
+            self.cursor.execute(self.sql_select + self.sql_sort)
+
         #  clear the listbox contents before re-loading
         self.clear()
         for value in self.cursor:
             self.insert(tkinter.END, value[0])
 
+    # e.target in JS
+    def on_select(self, event):
+        print(self is event.widget)  # TODO - DELETE
+        # lb = event.widget
+        index = self.curselection()[0]
+        value = self.get(index),  # this coma at the end is going to change it to tuple
 
-# e.target in JS
-def get_albums(event):
-    lb = event.widget
-    index = lb.curselection()[0]
-    artist_name = lb.get(index),  # this coma at the end is going to change it to tuple
+        # !IMPORTANT He said very clearly that using the function as a method class is very good (obvious) but You have
+        # to be very careful to not use global values, because then your classes are not going to work in different
+        # programs and this is not going to be something what you are going to notice instantly
+        # example conn
+        # link_id = conn.execute(self.sql_select + "WHERE " + self.field + "=?", value).fetchone()[0]
 
-    # get the artist ID from the database row
-    artist_id = conn.execute("SELECT artists._id FROM artists WHERE artists.name=?", artist_name).fetchone()
-    alist = []
-    for row in conn.execute("SELECT albums.name FROM albums WHERE albums.artist=? ORDER BY albums.name", artist_id):
-        alist.append(row[0])
-    albumLV.set(tuple(alist))
-    songLV.set(("Choose an album",))
+        # get the artist ID from the database row
+        link_id = self.cursor.execute(self.sql_select + "WHERE " + self.field + "=?", value).fetchone()[0]
+        # unpacking - ...fetchone()[0]
+        albumList.requery(link_id)
+
+        # old solution
+        # artist_id = conn.execute("SELECT artists._id FROM artists WHERE artists.name=?", artist_name).fetchone()
+        # alist = []
+        # for row in conn.execute("SELECT albums.name FROM albums WHERE albums.artist=?
+        # ORDER BY albums.name", artist_id):
+        #     alist.append(row[0])
+        # albumLV.set(tuple(alist))
+        # songLV.set(("Choose an album",))
 
 
 def get_songs(event):
@@ -120,8 +139,9 @@ artistList.bind('<<ListboxSelect>>', get_albums)  # case sensitive if ListBox...
 albumLV = tkinter.Variable(mainWindow)
 albumLV.set(("Choose an artist",))  # tuple
 
-albumList = DataListBox(mainWindow, conn, "albums", "name", sort_order=("name",))  # is variable is going to change it is going to be notify
-albumList.requery()
+albumList = DataListBox(mainWindow, conn, "albums", "name",
+                        sort_order=("name",))  # is variable is going to change it is going to be notify
+albumList.requery(12)
 
 albumList.grid(row=1, column=1, sticky='nsew', padx=(30, 0))
 albumList.config(border=2, relief='sunken')
