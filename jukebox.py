@@ -32,6 +32,7 @@ class DataListBox(Scrollbox):
         # variables to link the two lists
         self.linked_box = None
         self.link_field = None
+        self.link_value = None
 
         self.cursor = connection.cursor()  # we are using here cursor not connection
         self.table = table
@@ -54,7 +55,8 @@ class DataListBox(Scrollbox):
         widget.link_field = link_field
 
     def requery(self, link_value=None):
-        if link_value and self.link:  # when there is link value and established link between
+        self.link_value = link_value  # store the id so we know the master record we are populated from NICE!
+        if link_value and self.link_field:  # when there is link value and established link between
             # populating by specific id
             sql = self.sql_select + " WHERE " + self.link_field + "=?" + self.sql_sort
 
@@ -74,11 +76,20 @@ class DataListBox(Scrollbox):
     # e.target in JS
     def on_select(self, event):
         # checking if there is a link
-        if self.linked_box:
+        if self.linked_box and self.curselection():
             print(self is event.widget)  # TODO - DELETE
             # lb = event.widget
             index = self.curselection()[0]
             value = self.get(index),  # this coma at the end is going to change it to tuple
+
+            # geting the id from the db row
+            #  make sure we are getting the correct one, by including the link_value if appropriate
+            # >>>>>>>>>>>>>>>>>>> SOLUTION TO THE bug with the same albums of different artist !NICE!!!!!
+            if self.link_value:
+                value = value[0], self.link_value  # creating new tuple because tuple are unmutable
+                sql_where = " Where " + self.field + "=? AND " + self.link_field + "=?"
+            else:
+                sql_where = " WHERE " + self.field + "=?"
 
             # !IMPORTANT He said very clearly that using the function as a method class is very good (obvious) but You have
             # to be very careful to not use global values, because then your classes are not going to work in different
@@ -88,8 +99,9 @@ class DataListBox(Scrollbox):
 
             # get the artist ID from the database row
             # link_id = self.cursor.execute(self.sql_select + "WHERE " + self.field + "= ?", value).fetchone()[0]
-            link_id = self.cursor.execute(self.sql_select + " WHERE " + self.field + "=?", value).fetchone()[1]
-            # unpacking - ...fetchone()[0]
+            link_id = self.cursor.execute(self.sql_select + sql_where, value).fetchone()[1]
+            # !IMPORTANT: bugged part: query is checking just the value so just query so duplicated albums name
+            # different artist will gve errors - nice! -> consider it in future!
             self.linked_box.requery(link_id)
 
             # old solution
@@ -118,7 +130,6 @@ class DataListBox(Scrollbox):
 if __name__ == "__main__":
     # sql connection
     conn = sqlite3.connect('music.sqlite')
-
 
     mainWindow = tkinter.Tk()
     mainWindow.title('Music DB Browser')
